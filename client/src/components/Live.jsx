@@ -130,6 +130,7 @@ const Live = () => {
       onPointerUp={handlePointerUp}
       className="h-[100vh] w-full flex flex-col items-center justify-center text-center bg-primary-grey-200"
     >
+      <canvas />
       {/* Render the reactions */}
       {reactions.map((reaction) => (
         <FlyingReaction

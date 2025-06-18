@@ -1,11 +1,10 @@
-import Image from "next/image";
-
+import React from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
-import { Button } from "./ui/button";
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 const ShapesMenu = ({
   item,
@@ -15,22 +14,23 @@ const ShapesMenu = ({
   imageInputRef,
 }) => {
   const isDropdownElem = item.value.some(
-    (elem) => elem?.value === activeElement.value
+    (elem) => elem?.value === activeElement?.value
   );
 
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger asChild className="no-ring">
+        <DropdownMenuTrigger asChild>
           <Button
-            className="relative h-5 w-5 object-contain"
+            className="relative h-5 w-5 p-0"
             onClick={() => handleActiveElement(item)}
           >
-            <Image
-              src={isDropdownElem ? activeElement.icon : item.icon}
+            <img
+              src={isDropdownElem ? activeElement?.icon : item.icon}
               alt={item.name}
-              fill
-              className={isDropdownElem ? "invert" : ""}
+              className={`w-full h-full object-contain ${
+                isDropdownElem ? "invert" : ""
+              }`}
             />
           </Button>
         </DropdownMenuTrigger>
@@ -41,24 +41,24 @@ const ShapesMenu = ({
               key={elem?.name}
               onClick={() => handleActiveElement(elem)}
               className={`flex h-fit justify-between gap-10 rounded-none px-5 py-3 focus:border-none ${
-                activeElement.value === elem?.value
+                activeElement?.value === elem?.value
                   ? "bg-primary-green"
                   : "hover:bg-primary-grey-200"
               }`}
             >
               <div className="group flex items-center gap-2">
-                <Image
+                <img
                   src={elem?.icon}
                   alt={elem?.name}
                   width={20}
                   height={20}
-                  className={
-                    activeElement.value === elem?.value ? "invert" : ""
-                  }
+                  className={`object-contain ${
+                    activeElement?.value === elem?.value ? "invert" : ""
+                  }`}
                 />
                 <p
                   className={`text-sm ${
-                    activeElement.value === elem?.value
+                    activeElement?.value === elem?.value
                       ? "text-primary-black"
                       : "text-white"
                   }`}

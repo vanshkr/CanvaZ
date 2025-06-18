@@ -1,9 +1,7 @@
-import Image from "next/image";
-import { memo } from "react";
-
+import React, { memo } from "react";
 import { navElements } from "@/constants";
 
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 import ShapesMenu from "./ShapesMenu";
 import ActiveUsers from "./users/ActiveUsers";
 import { NewThread } from "./comments/NewThread";
@@ -21,9 +19,13 @@ const Navbar = ({
 
   return (
     <nav className="flex select-none items-center justify-between gap-4 bg-primary-black px-5 text-white">
-      <Image src="/assets/logo.svg" alt="FigPro Logo" width={58} height={20} />
+      <img
+        src="/assets/logo.svg"
+        alt="FigPro Logo"
+        className="w-[58px] h-auto"
+      />
 
-      <ul className="flex flex-row">
+      {/* <ul className="flex flex-row">
         {navElements.map((item) => (
           <li
             key={item.name}
@@ -49,28 +51,30 @@ const Navbar = ({
               />
             ) : item?.value === "comments" ? (
               <NewThread>
-                <Button className="relative w-5 h-5 object-contain">
-                  <Image
+                <Button className="relative w-5 h-5 p-0">
+                  <img
                     src={item.icon}
                     alt={item.name}
-                    fill
-                    className={isActive(item.value) ? "invert" : ""}
+                    className={`w-full h-full object-contain ${
+                      isActive(item.value) ? "invert" : ""
+                    }`}
                   />
                 </Button>
               </NewThread>
             ) : (
-              <Button className="relative w-5 h-5 object-contain">
-                <Image
+              <Button className="relative w-5 h-5 p-0">
+                <img
                   src={item.icon}
                   alt={item.name}
-                  fill
-                  className={isActive(item.value) ? "invert" : ""}
+                  className={`w-full h-full object-contain ${
+                    isActive(item.value) ? "invert" : ""
+                  }`}
                 />
               </Button>
             )}
           </li>
         ))}
-      </ul>
+      </ul> */}
 
       <ActiveUsers />
     </nav>
