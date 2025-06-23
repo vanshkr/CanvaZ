@@ -1,4 +1,4 @@
-import { fabric } from "fabric";
+import * as fabric from "fabric";
 import { v4 as uuid4 } from "uuid";
 
 import { defaultNavElement } from "@/constants";
@@ -60,7 +60,7 @@ export const handleCanvasMouseDown = ({
 };
 
 // handle mouse move event on canvas to draw shapes with different dimensions
-export const handleCanvaseMouseMove = ({
+export const handleCanvasMouseMove = ({
   options,
   canvas,
   isDrawing,
@@ -244,23 +244,37 @@ export const handleCanvasObjectScaling = ({
 export const renderCanvas = ({ fabricRef, canvasObjects, activeObjectRef }) => {
   fabricRef.current?.clear();
 
-  Array.from(canvasObjects, ([objectId, objectData]) => {
-    fabric.util.enlivenObjects(
-      [objectData],
-      (enlivenedObjects) => {
-        enlivenedObjects.forEach((enlivenedObj) => {
-          if (activeObjectRef.current?.objectId === objectId) {
-            fabricRef.current?.setActiveObject(enlivenedObj);
-          }
+  console.log(canvasObjects, "from render");
+  if (!canvasObjects || canvasObjects.size === 0) return;
+  Array.from(canvasObjects, async ([objectId, objectData]) => {
+    const fixedObjectData = {
+      ...objectData,
+      type: objectData.type?.toLowerCase(),
+    };
+    console.log("Trying to enliven:", objectId, fixedObjectData);
 
-          fabricRef.current?.add(enlivenedObj);
-        });
-      },
-      "fabric"
-    );
+    try {
+      const enlivenedObjects = await fabric.util.enlivenObjects([
+        fixedObjectData,
+      ]);
+
+      console.log("rendering object", enlivenedObjects);
+
+      enlivenedObjects.forEach((enlivenedObj) => {
+        if (activeObjectRef.current?.objectId === objectId) {
+          fabricRef.current?.setActiveObject(enlivenedObj);
+        }
+        fabricRef.current?.add(enlivenedObj);
+      });
+
+      fabricRef.current?.renderAll();
+    } catch (err) {
+      console.error("Failed to enliven object:", err);
+    }
   });
 
   fabricRef.current?.renderAll();
+  console.log("canvas rendered", fabricRef.current.getObjects());
 };
 
 // resize canvas dimensions on window resize
