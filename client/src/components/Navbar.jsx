@@ -25,7 +25,7 @@ const Navbar = ({
         className="w-[58px] h-auto"
       />
 
-      {/* <ul className="flex flex-row">
+      <ul className="flex flex-row">
         {navElements.map((item) => (
           <li
             key={item.name}
@@ -74,7 +74,7 @@ const Navbar = ({
             )}
           </li>
         ))}
-      </ul> */}
+      </ul>
 
       <ActiveUsers />
     </nav>

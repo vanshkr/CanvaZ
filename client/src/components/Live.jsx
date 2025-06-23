@@ -4,7 +4,7 @@ import {
   useBroadcastEvent,
   useEventListener,
 } from "@liveblocks/react";
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import LiveCursors from "./cursor/LiveCursors";
 import { CursorMode } from "@/types/type";
 import CursorChat from "./cursor/CursorChat";
@@ -12,7 +12,7 @@ import ReactionSelector from "./reaction/ReactionButton";
 import useInterval from "@/hooks/useInterval";
 import FlyingReaction from "./reaction/FlyingReaction";
 
-const Live = () => {
+const Live = ({ canvasRef }) => {
   const [{ cursor }, updateMyPresence] = useMyPresence();
   const [cursorState, setCursorState] = useState({ mode: CursorMode.Hidden });
   const [reactions, setReactions] = useState([]);
@@ -124,13 +124,14 @@ const Live = () => {
   }, [updateMyPresence]);
   return (
     <div
+      id="canvas"
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
       className="h-[100vh] w-full flex flex-col items-center justify-center text-center bg-primary-grey-200"
     >
-      <canvas />
+      <canvas ref={canvasRef} />
       {/* Render the reactions */}
       {reactions.map((reaction) => (
         <FlyingReaction
