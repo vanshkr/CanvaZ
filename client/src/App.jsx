@@ -1,4 +1,10 @@
-import { useOthers, useStorage, useMutation } from "@liveblocks/react";
+import {
+  useOthers,
+  useStorage,
+  useMutation,
+  useUndo,
+  useRedo,
+} from "@liveblocks/react";
 import Live from "./components/Live";
 import Navbar from "./components/Navbar";
 import LeftSidebar from "./components/LeftSidebar";
@@ -13,10 +19,13 @@ import {
   initializeFabric,
   renderCanvas,
 } from "./lib/canvas";
-import { handleDelete } from "./lib/key-events";
+import { handleDelete, handleKeyDown } from "./lib/key-events";
 import { defaultNavElement } from "@/constants";
+import { handleImageUpload } from "./lib/shapes";
 
 export function App() {
+  const undo = useUndo();
+  const redo = useRedo();
   const others = useOthers();
   const userCount = others.length;
   const canvasRef = useRef(null);
@@ -24,6 +33,8 @@ export function App() {
   const shapeRef = useRef(null);
   const selectedShapeRef = useRef(null);
   const isDrawing = useRef(false);
+  const isEditingRef = useRef(false);
+  const imageInputRef = useRef(null);
   const [activeElement, setActiveElement] = useState({
     name: "",
     value: "",
@@ -57,6 +68,12 @@ export function App() {
         setActiveElement(defaultNavElement);
         break;
       case "image":
+        imageInputRef.current?.click();
+        isDrawing.current = false;
+
+        if (fabricRef.current) {
+          fabricRef.current.isDrawingMode = false;
+        }
         break;
       case "comments":
         break;
@@ -80,6 +97,16 @@ export function App() {
     }
     return canvasObjects.size === 0;
   }, []);
+
+  const handleImage = (e) => {
+    e.stopPropagation();
+    handleImageUpload({
+      file: e.target.files[0],
+      canvas: fabricRef,
+      shapeRef,
+      syncShapeInStorage,
+    });
+  };
 
   useEffect(() => {
     const canvas = initializeFabric({ canvasRef, fabricRef });
@@ -130,11 +157,23 @@ export function App() {
       handleResize({ fabricRef });
     };
 
+    const handleUndoRedoEvent = (e) => {
+      handleKeyDown({
+        e,
+        canvas: fabricRef.current,
+        undo,
+        redo,
+        syncShapeInStorage,
+        deleteShapeFromStorage,
+      });
+    };
+
     canvas.on("mouse:down", handleMouseDown);
     canvas.on("mouse:move", handleMouseMove);
     canvas.on("mouse:up", handleMouseUp);
     canvas.on("object:modified", handleObjectModified);
     window.addEventListener("resize", handleResizeEvent);
+    window.addEventListener("keydown", (e) => handleUndoRedoEvent(e));
 
     return () => {
       canvas.dispose();
@@ -143,6 +182,7 @@ export function App() {
       canvas.off("mouse:up", handleMouseUp);
       canvas.off("object:modified", handleObjectModified);
       window.removeEventListener("resize", handleResizeEvent);
+      window.removeEventListener("keydown", handleUndoRedoEvent);
     };
   }, []);
 
@@ -155,9 +195,14 @@ export function App() {
       <Navbar
         handleActiveElement={handleActiveElement}
         activeElement={activeElement}
+        handleImageUpload={(e) => handleImage(e)}
+        imageInputRef={imageInputRef}
       />
       <section className="flex h-full flex-row">
-        <LeftSidebar allShapes={Array.from(canvasObjects)} />
+        <LeftSidebar
+          allShapes={canvasObjects ? Array.from(canvasObjects) : []}
+        />
+
         <Live canvasRef={canvasRef} />
         <RightSidebar />
       </section>

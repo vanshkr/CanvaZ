@@ -80,7 +80,7 @@ export const createSpecificShape = (shapeType, pointer) => {
   }
 };
 
-export const handleImageUpload = ({
+export const handleImageUpload = async ({
   file,
   canvas,
   shapeRef,
@@ -88,20 +88,28 @@ export const handleImageUpload = ({
 }) => {
   const reader = new FileReader();
 
-  reader.onload = () => {
-    fabric.Image.fromURL(reader.result, (img) => {
+  reader.onload = async () => {
+    try {
+      const img = await fabric.FabricImage.fromURL(reader.result);
+
+      if (!canvas.current) return;
+
       img.scaleToWidth(200);
       img.scaleToHeight(200);
-
-      canvas.current.add(img);
+      img.set({
+        left: 100,
+        top: 100,
+      });
 
       img.objectId = uuidv4();
-
       shapeRef.current = img;
 
+      canvas.current.add(img);
       syncShapeInStorage(img);
       canvas.current.requestRenderAll();
-    });
+    } catch (err) {
+      console.error("Error loading image:", err);
+    }
   };
 
   reader.readAsDataURL(file);
