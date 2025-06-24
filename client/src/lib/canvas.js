@@ -244,21 +244,17 @@ export const handleCanvasObjectScaling = ({
 export const renderCanvas = ({ fabricRef, canvasObjects, activeObjectRef }) => {
   fabricRef.current?.clear();
 
-  console.log(canvasObjects, "from render");
   if (!canvasObjects || canvasObjects.size === 0) return;
   Array.from(canvasObjects, async ([objectId, objectData]) => {
     const fixedObjectData = {
       ...objectData,
       type: objectData.type?.toLowerCase(),
     };
-    console.log("Trying to enliven:", objectId, fixedObjectData);
 
     try {
       const enlivenedObjects = await fabric.util.enlivenObjects([
         fixedObjectData,
       ]);
-
-      console.log("rendering object", enlivenedObjects);
 
       enlivenedObjects.forEach((enlivenedObj) => {
         if (activeObjectRef.current?.objectId === objectId) {
@@ -274,7 +270,6 @@ export const renderCanvas = ({ fabricRef, canvasObjects, activeObjectRef }) => {
   });
 
   fabricRef.current?.renderAll();
-  console.log("canvas rendered", fabricRef.current.getObjects());
 };
 
 // resize canvas dimensions on window resize

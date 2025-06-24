@@ -1,13 +1,14 @@
 import { useOthers, useStorage, useMutation } from "@liveblocks/react";
 import Live from "./components/Live";
 import Navbar from "./components/Navbar";
-import LeftSidebar from "./components/LSidebar";
+import LeftSidebar from "./components/LeftSidebar";
 import RightSidebar from "./components/RightSidebar";
 import { useState, useEffect, useRef } from "react";
 import {
   handleCanvasMouseDown,
   handleCanvasMouseUp,
   handleCanvasMouseMove,
+  handleCanvasObjectModified,
   handleResize,
   initializeFabric,
   renderCanvas,
@@ -33,14 +34,12 @@ export function App() {
   const canvasObjects = useStorage((root) => root.canvasObjects);
 
   const syncShapeInStorage = useMutation(({ storage }, object) => {
-    console.log("syncShapeInStorage", object);
     if (!object) return;
 
     const { objectId } = object;
     const shapeData = object.toJSON();
     shapeData.objectId = objectId;
     const canvaObjects = storage.get("canvasObjects");
-    console.log("syncShapeInStorage", objectId, shapeData, canvaObjects);
     canvaObjects.set(objectId, shapeData);
   }, []);
 
@@ -120,6 +119,13 @@ export function App() {
       });
     };
 
+    const handleObjectModified = (options) => {
+      handleCanvasObjectModified({
+        options,
+        syncShapeInStorage,
+      });
+    };
+
     const handleResizeEvent = () => {
       handleResize({ fabricRef });
     };
@@ -127,6 +133,7 @@ export function App() {
     canvas.on("mouse:down", handleMouseDown);
     canvas.on("mouse:move", handleMouseMove);
     canvas.on("mouse:up", handleMouseUp);
+    canvas.on("object:modified", handleObjectModified);
     window.addEventListener("resize", handleResizeEvent);
 
     return () => {
@@ -134,6 +141,7 @@ export function App() {
       canvas.off("mouse:down", handleMouseDown);
       canvas.off("mouse:move", handleMouseMove);
       canvas.off("mouse:up", handleMouseUp);
+      canvas.off("object:modified", handleObjectModified);
       window.removeEventListener("resize", handleResizeEvent);
     };
   }, []);
@@ -149,7 +157,7 @@ export function App() {
         activeElement={activeElement}
       />
       <section className="flex h-full flex-row">
-        <LeftSidebar />
+        <LeftSidebar allShapes={Array.from(canvasObjects)} />
         <Live canvasRef={canvasRef} />
         <RightSidebar />
       </section>
