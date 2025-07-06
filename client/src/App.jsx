@@ -4,6 +4,8 @@ import {
   useMutation,
   useUndo,
   useRedo,
+  useCanUndo,
+  useCanRedo,
 } from "@liveblocks/react";
 import Live from "./components/Live";
 import Navbar from "./components/Navbar";
@@ -15,6 +17,8 @@ import {
   handleCanvasMouseUp,
   handleCanvasMouseMove,
   handleCanvasObjectModified,
+  handleCanvasSelectionCreated,
+  handleCanvasObjectScaling,
   handleResize,
   initializeFabric,
   renderCanvas,
@@ -26,8 +30,9 @@ import { handleImageUpload } from "./lib/shapes";
 export function App() {
   const undo = useUndo();
   const redo = useRedo();
+  const canUndo = useCanUndo();
+  const canRedo = useCanRedo();
   const others = useOthers();
-  const userCount = others.length;
   const canvasRef = useRef(null);
   const fabricRef = useRef(null);
   const shapeRef = useRef(null);
@@ -35,12 +40,25 @@ export function App() {
   const isDrawing = useRef(false);
   const isEditingRef = useRef(false);
   const imageInputRef = useRef(null);
+  const activeObjectRef = useRef(null);
+  
   const [activeElement, setActiveElement] = useState({
     name: "",
     value: "",
     icon: "",
   });
-  const activeObjectRef = useRef(null);
+  
+  const [elementAttributes, setElementAttributes] = useState({
+    width: "",
+    height: "",
+    fontSize: "",
+    fontFamily: "",
+    fontWeight: "",
+    fill: "#aabbcc",
+    stroke: "#aabbcc",
+  });
+
+  const [selectedShapeId, setSelectedShapeId] = useState(null);
 
   const canvasObjects = useStorage((root) => root.canvasObjects);
 
@@ -108,6 +126,18 @@ export function App() {
     });
   };
 
+  const handleSelectShape = (shapeId) => {
+    setSelectedShapeId(shapeId);
+    // Additional logic to select shape on canvas
+  };
+
+  const handleDeleteShape = (shapeId) => {
+    deleteShapeFromStorage(shapeId);
+    if (selectedShapeId === shapeId) {
+      setSelectedShapeId(null);
+    }
+  };
+
   useEffect(() => {
     const canvas = initializeFabric({ canvasRef, fabricRef });
 
@@ -153,8 +183,23 @@ export function App() {
       });
     };
 
+    const handleSelectionCreated = (options) => {
+      handleCanvasSelectionCreated({
+        options,
+        isEditingRef,
+        setElementAttributes,
+      });
+    };
+
+    const handleObjectScaling = (options) => {
+      handleCanvasObjectScaling({
+        options,
+        setElementAttributes,
+      });
+    };
+
     const handleResizeEvent = () => {
-      handleResize({ fabricRef });
+      handleResize({ canvas: fabricRef.current });
     };
 
     const handleUndoRedoEvent = (e) => {
@@ -172,6 +217,9 @@ export function App() {
     canvas.on("mouse:move", handleMouseMove);
     canvas.on("mouse:up", handleMouseUp);
     canvas.on("object:modified", handleObjectModified);
+    canvas.on("selection:created", handleSelectionCreated);
+    canvas.on("selection:updated", handleSelectionCreated);
+    canvas.on("object:scaling", handleObjectScaling);
     window.addEventListener("resize", handleResizeEvent);
     window.addEventListener("keydown", (e) => handleUndoRedoEvent(e));
 
@@ -181,6 +229,9 @@ export function App() {
       canvas.off("mouse:move", handleMouseMove);
       canvas.off("mouse:up", handleMouseUp);
       canvas.off("object:modified", handleObjectModified);
+      canvas.off("selection:created", handleSelectionCreated);
+      canvas.off("selection:updated", handleSelectionCreated);
+      canvas.off("object:scaling", handleObjectScaling);
       window.removeEventListener("resize", handleResizeEvent);
       window.removeEventListener("keydown", handleUndoRedoEvent);
     };
@@ -191,20 +242,35 @@ export function App() {
   }, [canvasObjects]);
 
   return (
-    <main className="h-screen overflow-hidden">
+    <main className="h-screen overflow-hidden bg-slate-900">
       <Navbar
         handleActiveElement={handleActiveElement}
         activeElement={activeElement}
         handleImageUpload={(e) => handleImage(e)}
         imageInputRef={imageInputRef}
+        undo={undo}
+        redo={redo}
+        canUndo={canUndo}
+        canRedo={canRedo}
       />
       <section className="flex h-full flex-row">
         <LeftSidebar
           allShapes={canvasObjects ? Array.from(canvasObjects) : []}
+          onSelectShape={handleSelectShape}
+          onDeleteShape={handleDeleteShape}
+          selectedShapeId={selectedShapeId}
         />
 
         <Live canvasRef={canvasRef} />
-        <RightSidebar />
+        
+        <RightSidebar
+          elementAttributes={elementAttributes}
+          setElementAttributes={setElementAttributes}
+          fabricRef={fabricRef}
+          isEditingRef={isEditingRef}
+          activeObjectRef={activeObjectRef}
+          syncShapeInStorage={syncShapeInStorage}
+        />
       </section>
     </main>
   );

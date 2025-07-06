@@ -11,6 +11,7 @@ import CursorChat from "./cursor/CursorChat";
 import ReactionSelector from "./reaction/ReactionButton";
 import useInterval from "@/hooks/useInterval";
 import FlyingReaction from "./reaction/FlyingReaction";
+import { Comments } from "./comments/Comments";
 
 const Live = ({ canvasRef }) => {
   const [{ cursor }, updateMyPresence] = useMyPresence();
@@ -66,15 +67,15 @@ const Live = ({ canvasRef }) => {
     if (cursor == null || cursorState.mode !== CursorMode.ReactionSelector) {
       const x = event.clientX - event.currentTarget.getBoundingClientRect().x;
       const y = event.clientY - event.currentTarget.getBoundingClientRect().y;
-      // Update the cursor position in the presence state
       updateMyPresence({ cursor: { x, y } });
     }
   };
+
   const handlePointerLeave = () => {
     setCursorState({ mode: CursorMode.Hidden });
-    // Clear the cursor position when the pointer leaves the area
     updateMyPresence({ cursor: null, message: null });
   };
+
   const handlePointerDown = (event) => {
     const x = event.clientX - event.currentTarget.getBoundingClientRect().x;
     const y = event.clientY - event.currentTarget.getBoundingClientRect().y;
@@ -93,6 +94,7 @@ const Live = ({ canvasRef }) => {
         : state
     );
   };
+
   useEffect(() => {
     const onKeyUp = (e) => {
       if (e.key === "/") {
@@ -122,6 +124,7 @@ const Live = ({ canvasRef }) => {
       window.removeEventListener("keydown", onKeyDown);
     };
   }, [updateMyPresence]);
+
   return (
     <div
       id="canvas"
@@ -129,10 +132,26 @@ const Live = ({ canvasRef }) => {
       onPointerLeave={handlePointerLeave}
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
-      className="h-[100vh] w-full flex flex-col items-center justify-center text-center bg-primary-grey-200"
+      className="h-[100vh] w-full flex flex-col items-center justify-center text-center bg-gradient-to-br from-slate-100 via-slate-50 to-blue-50 relative overflow-hidden"
     >
-      <canvas ref={canvasRef} />
-      {/* Render the reactions */}
+      {/* Grid Background */}
+      <div 
+        className="absolute inset-0 opacity-30"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(148, 163, 184, 0.1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(148, 163, 184, 0.1) 1px, transparent 1px)
+          `,
+          backgroundSize: '20px 20px'
+        }}
+      />
+
+      {/* Canvas */}
+      <div className="relative bg-white rounded-lg shadow-2xl border border-slate-200 overflow-hidden">
+        <canvas ref={canvasRef} className="block" />
+      </div>
+
+      {/* Reactions */}
       {reactions.map((reaction) => (
         <FlyingReaction
           key={reaction.timestamp.toString()}
@@ -142,7 +161,11 @@ const Live = ({ canvasRef }) => {
           value={reaction.value}
         />
       ))}
+
+      {/* Live Features */}
       <LiveCursors />
+      <Comments />
+      
       {cursor && (
         <CursorChat
           cursor={cursor}
@@ -151,6 +174,7 @@ const Live = ({ canvasRef }) => {
           updateMyPresence={updateMyPresence}
         />
       )}
+      
       {cursorState.mode === CursorMode.ReactionSelector && (
         <ReactionSelector
           setReaction={(reaction) => {

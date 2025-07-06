@@ -5,6 +5,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { ChevronDown } from "lucide-react";
 
 const ShapesMenu = ({
   item,
@@ -22,52 +23,45 @@ const ShapesMenu = ({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            className="relative h-5 w-5 p-0"
+            className="relative h-8 w-8 p-0 bg-transparent hover:bg-slate-700 border-none"
             onClick={() => handleActiveElement(item)}
           >
             <img
               src={isDropdownElem ? activeElement?.icon : item.icon}
               alt={item.name}
-              className={`w-full h-full object-contain ${
-                isDropdownElem ? "invert" : ""
+              className={`w-5 h-5 object-contain transition-all ${
+                isDropdownElem ? "invert brightness-0" : "opacity-70"
               }`}
             />
+            <ChevronDown className="w-3 h-3 absolute -bottom-1 -right-1 text-slate-400" />
           </Button>
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent className="mt-5 flex flex-col gap-y-1 border-none bg-primary-black py-4 text-white">
-          {item.value.map((elem) => (
-            <Button
-              key={elem?.name}
-              onClick={() => handleActiveElement(elem)}
-              className={`flex h-fit justify-between gap-10 rounded-none px-5 py-3 focus:border-none ${
-                activeElement?.value === elem?.value
-                  ? "bg-primary-green"
-                  : "hover:bg-primary-grey-200"
-              }`}
-            >
-              <div className="group flex items-center gap-2">
+        <DropdownMenuContent className="mt-2 bg-slate-800 border-slate-700 shadow-xl rounded-lg overflow-hidden">
+          <div className="p-2 space-y-1">
+            {item.value.map((elem) => (
+              <Button
+                key={elem?.name}
+                onClick={() => handleActiveElement(elem)}
+                className={`w-full flex items-center justify-start gap-3 rounded-md px-3 py-2 text-left transition-all ${
+                  activeElement?.value === elem?.value
+                    ? "bg-blue-500 text-white"
+                    : "text-slate-200 hover:bg-slate-700"
+                }`}
+              >
                 <img
                   src={elem?.icon}
                   alt={elem?.name}
-                  width={20}
-                  height={20}
+                  width={18}
+                  height={18}
                   className={`object-contain ${
-                    activeElement?.value === elem?.value ? "invert" : ""
+                    activeElement?.value === elem?.value ? "invert brightness-0" : ""
                   }`}
                 />
-                <p
-                  className={`text-sm ${
-                    activeElement?.value === elem?.value
-                      ? "text-primary-black"
-                      : "text-white"
-                  }`}
-                >
-                  {elem?.name}
-                </p>
-              </div>
-            </Button>
-          ))}
+                <span className="text-sm font-medium">{elem?.name}</span>
+              </Button>
+            ))}
+          </div>
         </DropdownMenuContent>
       </DropdownMenu>
 

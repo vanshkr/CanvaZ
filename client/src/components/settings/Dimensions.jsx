@@ -1,38 +1,46 @@
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
+import { Maximize } from "lucide-react";
 
 const dimensionsOptions = [
-  { label: "W", property: "width" },
-  { label: "H", property: "height" },
+  { label: "Width", property: "width", unit: "px" },
+  { label: "Height", property: "height", unit: "px" },
 ];
 
 const Dimensions = ({ width, height, isEditingRef, handleInputChange }) => (
-  <section className="flex flex-col border-b border-primary-grey-200">
-    <div className="flex flex-col gap-4 px-6 py-3">
+  <div className="space-y-4">
+    <div className="flex items-center gap-2">
+      <Maximize className="w-4 h-4 text-slate-400" />
+      <h4 className="text-xs font-medium text-slate-300 uppercase tracking-wide">Dimensions</h4>
+    </div>
+    
+    <div className="grid grid-cols-2 gap-3">
       {dimensionsOptions.map((item) => (
-        <div
-          key={item.label}
-          className="flex flex-1 items-center gap-3 rounded-sm"
-        >
-          <Label htmlFor={item.property} className="text-[10px] font-bold">
+        <div key={item.label} className="space-y-2">
+          <Label htmlFor={item.property} className="text-xs text-slate-400 font-medium">
             {item.label}
           </Label>
-          <Input
-            type="number"
-            id={item.property}
-            placeholder="100"
-            value={item.property === "width" ? width : height}
-            className="input-ring"
-            min={10}
-            onChange={(e) => handleInputChange(item.property, e.target.value)}
-            onBlur={() => {
-              isEditingRef.current = false;
-            }}
-          />
+          <div className="relative">
+            <Input
+              type="number"
+              id={item.property}
+              placeholder="100"
+              value={item.property === "width" ? width : height}
+              className="bg-slate-800 border-slate-600 text-white pr-8"
+              min={1}
+              onChange={(e) => handleInputChange(item.property, e.target.value)}
+              onBlur={() => {
+                isEditingRef.current = false;
+              }}
+            />
+            <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-slate-400">
+              {item.unit}
+            </span>
+          </div>
         </div>
       ))}
     </div>
-  </section>
+  </div>
 );
 
 export default Dimensions;

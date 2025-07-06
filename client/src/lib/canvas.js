@@ -10,8 +10,9 @@ export const initializeFabric = ({ fabricRef, canvasRef }) => {
   if (!canvasRef.current || !canvasElement) return null;
 
   const canvas = new fabric.Canvas(canvasRef.current, {
-    width: canvasElement.clientWidth,
-    height: canvasElement.clientHeight,
+    width: 1200,
+    height: 800,
+    backgroundColor: '#ffffff',
   });
 
   fabricRef.current = canvas;
@@ -35,6 +36,7 @@ export const handleCanvasMouseDown = ({
     isDrawing.current = true;
     canvas.isDrawingMode = true;
     canvas.freeDrawingBrush.width = 5;
+    canvas.freeDrawingBrush.color = "#000000";
     return;
   }
 
@@ -78,8 +80,8 @@ export const handleCanvasMouseMove = ({
     case "triangle":
     case "image":
       shapeRef.current?.set({
-        width: pointer.x - (shapeRef.current?.left || 0),
-        height: pointer.y - (shapeRef.current?.top || 0),
+        width: Math.abs(pointer.x - (shapeRef.current?.left || 0)),
+        height: Math.abs(pointer.y - (shapeRef.current?.top || 0)),
       });
       break;
 
@@ -139,7 +141,7 @@ export const handleCanvasObjectModified = ({ options, syncShapeInStorage }) => {
   if (!target) return;
 
   if (target.type === "activeSelection") {
-    // TODO: fix this if needed
+    // Handle multiple selection if needed
   } else {
     syncShapeInStorage(target);
   }
@@ -155,36 +157,6 @@ export const handlePathCreated = ({ options, syncShapeInStorage }) => {
   });
 
   syncShapeInStorage(path);
-};
-
-// check how object is moving on canvas and restrict it to canvas boundaries
-export const handleCanvasObjectMoving = ({ options }) => {
-  const target = options.target;
-  if (!target) return;
-
-  const canvas = target.canvas;
-
-  target.setCoords();
-
-  if (typeof target.left === "number") {
-    target.left = Math.max(
-      0,
-      Math.min(
-        target.left,
-        (canvas.width || 0) - (target.getScaledWidth() || target.width || 0)
-      )
-    );
-  }
-
-  if (typeof target.top === "number") {
-    target.top = Math.max(
-      0,
-      Math.min(
-        target.top,
-        (canvas.height || 0) - (target.getScaledHeight() || target.height || 0)
-      )
-    );
-  }
 };
 
 // set element attributes when element is selected
@@ -245,6 +217,7 @@ export const renderCanvas = ({ fabricRef, canvasObjects, activeObjectRef }) => {
   fabricRef.current?.clear();
 
   if (!canvasObjects || canvasObjects.size === 0) return;
+  
   Array.from(canvasObjects, async ([objectId, objectData]) => {
     const fixedObjectData = {
       ...objectData,
@@ -274,12 +247,11 @@ export const renderCanvas = ({ fabricRef, canvasObjects, activeObjectRef }) => {
 
 // resize canvas dimensions on window resize
 export const handleResize = ({ canvas }) => {
-  const canvasElement = document.getElementById("canvas");
-  if (!canvasElement || !canvas) return;
+  if (!canvas) return;
 
   canvas.setDimensions({
-    width: canvasElement.clientWidth,
-    height: canvasElement.clientHeight,
+    width: 1200,
+    height: 800,
   });
 };
 
@@ -289,7 +261,7 @@ export const handleCanvasZoom = ({ options, canvas }) => {
   let zoom = canvas.getZoom();
 
   const minZoom = 0.2;
-  const maxZoom = 1;
+  const maxZoom = 3;
   const zoomStep = 0.001;
 
   zoom = Math.min(Math.max(minZoom, zoom + delta * zoomStep), maxZoom);

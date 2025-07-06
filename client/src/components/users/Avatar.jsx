@@ -14,16 +14,17 @@ const Avatar = ({ name, otherStyles }) => {
     <Tooltip>
       <TooltipTrigger asChild>
         <div
-          className={`relative h-9 w-9 rounded-full overflow-hidden cursor-pointer ${otherStyles}`}
+          className={`relative h-9 w-9 rounded-full overflow-hidden cursor-pointer transition-transform hover:scale-110 ${otherStyles}`}
         >
           <img
             src={avatarUrl}
             alt={name}
             className="w-full h-full object-cover rounded-full"
           />
+          <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black/20 to-transparent" />
         </div>
       </TooltipTrigger>
-      <TooltipContent className="border-none bg-gray-200 px-2.5 py-1.5 text-xs rounded-md">
+      <TooltipContent className="bg-slate-800 border-slate-700 text-white">
         {name}
       </TooltipContent>
     </Tooltip>
